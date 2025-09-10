@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muhammed Yazeen - Flutter & AI Developer</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>ｧ鯛 昨汳ｻ</text></svg>">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+
+
+    <style>
+        /* Custom Styles & Overrides */
+        :root {
+            --bg-light: #f7fee7;      /* Very Light Lime Green */
+            --bg-card: #ffffff;
+            --primary-accent: #22c55e; /* Vibrant Green (matches Tailwind green-500) */
+            --secondary-accent: #84cc16; /* Bright Lime (matches Tailwind lime-500) */
+            --text-dark: #1f2937;      /* Dark Gray */
+            --text-muted: #6b7280;     /* Medium Gray */
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Spinner Loading Screen Style */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background-color: var(--bg-light);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+        }
+        #loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader-ring {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(0, 0, 0, 0.1);
+            border-top-color: var(--primary-accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary-accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            z-index: 9999;
+        }
+        .cursor-grow {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(34, 197, 94, 0.2);
+        }
+        
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Section Title Underline */
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-accent), var(--secondary-accent));
+            margin: 1rem auto 0;
+            border-radius: 2px;
+        }
+        
+        /* Glassmorphism Card Effect for Light Theme */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .glass-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+        }
+
+        /* Scroll-based Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s cubic-bezier(0.6, 0.2, 0.1, 1), transform 0.8s cubic-bezier(0.6, 0.2, 0.1, 1);
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Circular Progress Bar Transition */
+        .progress-circle {
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.6, 0.2, 0.1, 1);
+        }
+        
+        /* NEW: Style for 3D tilt effect preservation */
+        .tech-card {
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+        }
+
+        /* 3D Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        /* Active Nav Link Style */
+        .active-link {
+            color: var(--primary-accent) !important;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="relative">
+
+    <div id="loading-screen">
+        <div class="loader-ring"></div>
+    </div>
+
+    <div class="cursor hidden md:block"></div>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#home" class="text-2xl font-bold gradient-text">M. Yazeen</a>
+            <nav id="nav-menu" class="hidden md:flex space-x-8 items-center">
+                <a href="#about" class="text-gray-700 hover:text-green-500 transition">About</a>
+                <a href="#services" class="text-gray-700 hover:text-green-500 transition">Services</a>
+                <a href="#skills" class="text-gray-700 hover:text-green-500 transition">Skills</a>
+                <a href="#projects" class="text-gray-700 hover:text-green-500 transition">Projects</a>
+                <a href="#contact" class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-full transition-all duration-300 shadow-lg shadow-green-500/30">Let's Talk</a>
+            </nav>
+            <button id="mobile-menu-btn" class="md:hidden text-2xl z-50">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <div id="mobile-menu" class="fixed inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center space-y-8 text-2xl z-40 transform -translate-y-full transition-transform duration-300">
+        <a href="#about" class="nav-link text-gray-800">About</a>
+        <a href="#services" class="nav-link text-gray-800">Services</a>
+        <a href="#skills" class="nav-link text-gray-800">Skills</a>
+        <a href="#projects" class="nav-link text-gray-800">Projects</a>
+        <a href="#contact" class="nav-link text-gray-800">Contact</a>
+    </div>
+
+    <main>
+
+        <section id="home" class="h-screen flex items-center justify-center text-center">
+            <div class="container mx-auto px-6">
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-4 leading-tight">
+                    <span class="block text-gray-800">Hi, I'm Muhammed Yazeen</span>
+                    A <span class="gradient-text">Flutter Developer</span> & AI Enthusiast
+                </h1>
+                <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600 mb-8">
+                    I build beautiful, high-performance mobile apps that solve real-world problems and delight users.
+                </p>
+                <div class="flex justify-center gap-4">
+                    <a href="#projects" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg shadow-green-500/30 transform hover:scale-105">
+                        View My Work
+                    </a>
+                    <a href="Resume_Yazeen_mm.pdf" download class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105">
+                        Download CV
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="reveal">
+                        <div class="relative w-max mx-auto group">
+                            <img src="photo.jpg" alt="A photo of Muhammed Yazeen" class="w-64 h-64 md:w-80 md:h-80 rounded-full object-cover shadow-2xl group-hover:shadow-green-500/40 transition-shadow duration-300">
+                            <div class="absolute top-0 left-0 w-full h-full border-4 border-green-400 rounded-full animate-spin-slow group-hover:animate-[spin_4s_linear_infinite]"></div>
+                        </div>
+                    </div>
+                    <div class="reveal" style="transition-delay: 0.2s;">
+                        <h2 class="section-title text-4xl font-bold text-left mb-8">About Me</h2>
+                        <p class="text-gray-800 text-lg mb-4">
+                            I am a Computer Science undergraduate with hands-on experience in cross-platform app development, API integration, and AI implementation. My passion is building technology that is not only powerful, but also intuitive and accessible to everyone.
+                        </p>
+                        <p class="text-gray-600 mb-6">
+                            With a proven ability to lead in collaborative projects, internships, and hackathons, I am skilled at delivering user-focused solutions that improve functionality and experience. I enjoy tackling complex problems and turning innovative ideas into real-world applications.
+                        </p>
+                        <a href="#contact" class="text-green-500 font-semibold hover:underline">Let's connect <i class="fas fa-arrow-right ml-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="services" class="py-20 bg-lime-50/50">
+            <div class="container mx-auto px-6">
+                <h2 class="section-title text-4xl font-bold text-center mb-16 reveal">What I Offer</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="glass-card p-8 rounded-2xl text-center reveal">
+                        <div class="text-5xl text-green-500 mb-4 inline-block"><i class="fas fa-palette"></i></div>
+                        <h3 class="text-2xl font-bold mb-3">Stunning Designs</h3>
+                        <p class="text-gray-600 mb-6">Crafting sophisticated and user-friendly designs that captivate and inspire, tailored to your unique needs.</p>
+                        <h4 class="font-semibold text-gray-800 mb-2">Design Tools I Use:</h4>
+                        <p class="text-gray-600">Figma</p>
+                    </div>
+                    <div class="glass-card p-8 rounded-2xl text-center reveal" style="transition-delay: 0.2s;">
+                        <div class="text-5xl text-lime-500 mb-4 inline-block"><i class="fas fa-code"></i></div>
+                        <h3 class="text-2xl font-bold mb-3">Development Toolbox</h3>
+                        <p class="text-gray-600 mb-6">Empowering projects with a versatile toolbox of frameworks and technologies for robust solutions.</p>
+                        <h4 class="font-semibold text-gray-800 mb-2">Coding Tools I Use:</h4>
+                        <p class="text-gray-600">Flutter, Firebase, Git, REST APIs</p>
+                    </div>
+                    <div class="glass-card p-8 rounded-2xl text-center reveal" style="transition-delay: 0.4s;">
+                        <div class="text-5xl text-green-500 mb-4 inline-block"><i class="fas fa-brain"></i></div>
+                        <h3 class="text-2xl font-bold mb-3">AI Integration</h3>
+                        <p class="text-gray-600 mb-6">Unleashing innovation by integrating intelligent AI models to create smarter, more efficient applications.</p>
+                        <h4 class="font-semibold text-gray-800 mb-2">Technologies I Use:</h4>
+                        <p class="text-gray-600">Python, Llama AI, TensorFlow</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills" class="py-20 bg-lime-50/50">
+            <div class="container mx-auto px-6">
+                <h2 class="section-title text-4xl font-bold text-center mb-8 reveal">My Tech Stack</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12 reveal">Technologies I work with to build exceptional digital experiences.</p>
+
+                <div id="tech-filters" class="flex flex-wrap justify-center gap-2 md:gap-4 mb-12 reveal">
+                    <button data-filter="all" class="filter-btn bg-green-500 text-white font-semibold py-2 px-5 rounded-full transition-all duration-300">All</button>
+                    <button data-filter="frontend" class="filter-btn bg-white hover:bg-green-500 hover:text-white text-gray-700 font-semibold py-2 px-5 rounded-full transition-all duration-300">Frontend</button>
+                    <button data-filter="backend" class="filter-btn bg-white hover:bg-green-500 hover:text-white text-gray-700 font-semibold py-2 px-5 rounded-full transition-all duration-300">Backend</button>
+                    <button data-filter="ai-ml" class="filter-btn bg-white hover:bg-green-500 hover:text-white text-gray-700 font-semibold py-2 px-5 rounded-full transition-all duration-300">AI/ML</button>
+                    <button data-filter="tools" class="filter-btn bg-white hover:bg-green-500 hover:text-white text-gray-700 font-semibold py-2 px-5 rounded-full transition-all duration-300">Tools</button>
+                </div>
+
+                <div id="tech-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
+                    <div class="tech-card glass-card p-4 rounded-xl text-center reveal" data-category="frontend" data-percent="85" data-tilt>
+                        <div class="relative w-24 h-24 mx-auto mb-3 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100">
+                                <circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
+                                <circle class="progress-circle text-green-500" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="transform: rotate(-90deg); transform-origin: 50% 50%; stroke-dasharray: 283; stroke-dashoffset: 283;"/>
+                            </svg>
+                            <i class="devicon-flutter-plain text-5xl absolute text-blue-400"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">Flutter</h4>
+                    </div>
+                    <div class="tech-card glass-card p-4 rounded-xl text-center reveal" data-category="frontend" data-percent="80" data-tilt style="transition-delay: 0.1s;">
+                        <div class="relative w-24 h-24 mx-auto mb-3 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100"><circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/><circle class="progress-circle text-green-500" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="transform: rotate(-90deg); transform-origin: 50% 50%; stroke-dasharray: 283; stroke-dashoffset: 283;"/></svg>
+                            <i class="devicon-dart-plain-wordmark text-5xl absolute text-blue-500"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">Dart</h4>
+                    </div>
+                    <div class="tech-card glass-card p-4 rounded-xl text-center reveal" data-category="backend" data-percent="75" data-tilt style="transition-delay: 0.2s;">
+                        <div class="relative w-24 h-24 mx-auto mb-3 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100"><circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/><circle class="progress-circle text-yellow-500" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="transform: rotate(-90deg); transform-origin: 50% 50%; stroke-dasharray: 283; stroke-dashoffset: 283;"/></svg>
+                            <i class="devicon-firebase-plain text-5xl absolute text-yellow-500"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">Firebase</h4>
+                    </div>
+                    <div class="tech-card glass-card p-4 rounded-xl text-center reveal" data-category="ai-ml" data-percent="65" data-tilt style="transition-delay: 0.3s;">
+                        <div class="relative w-24 h-24 mx-auto mb-3 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100"><circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/><circle class="progress-circle text-purple-500" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="transform: rotate(-90deg); transform-origin: 50% 50%; stroke-dasharray: 283; stroke-dashoffset: 283;"/></svg>
+                            <i class="devicon-python-plain text-5xl absolute text-blue-600"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">Python</h4>
+                    </div>
+                    <div class="tech-card glass-card p-4 rounded-xl text-center reveal" data-category="tools" data-percent="90" data-tilt style="transition-delay: 0.4s;">
+                        <div class="relative w-24 h-24 mx-auto mb-3 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100"><circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/><circle class="progress-circle text-gray-800" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="transform: rotate(-90deg); transform-origin: 50% 50%; stroke-dasharray: 283; stroke-dashoffset: 283;"/></svg>
+                            <i class="devicon-github-original text-5xl absolute"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">GitHub</h4>
+                    </div>
+                    <div class="tech-card glass-card p-4 rounded-xl text-center reveal" data-category="tools" data-percent="70" data-tilt style="transition-delay: 0.5s;">
+                        <div class="relative w-24 h-24 mx-auto mb-3 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100"><circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/><circle class="progress-circle text-pink-500" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="transform: rotate(-90deg); transform-origin: 50% 50%; stroke-dasharray: 283; stroke-dashoffset: 283;"/></svg>
+                            <i class="devicon-figma-plain text-5xl absolute text-pink-500"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">Figma</h4>
+                    </div>
+                    <div class="tech-card glass-card p-4 rounded-xl text-center reveal" data-category="ai-ml" data-percent="55" data-tilt style="transition-delay: 0.6s;">
+                        <div class="relative w-24 h-24 mx-auto mb-3 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100"><circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/><circle class="progress-circle text-orange-500" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="transform: rotate(-90deg); transform-origin: 50% 50%; stroke-dasharray: 283; stroke-dashoffset: 283;"/></svg>
+                            <i class="devicon-tensorflow-original text-5xl absolute text-orange-500"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">TensorFlow</h4>
+                    </div>
+                     <div class="tech-card glass-card p-4 rounded-xl text-center reveal" data-category="backend" data-percent="70" data-tilt style="transition-delay: 0.7s;">
+                        <div class="relative w-24 h-24 mx-auto mb-3 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100"><circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/><circle class="progress-circle text-blue-500" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="transform: rotate(-90deg); transform-origin: 50% 50%; stroke-dasharray: 283; stroke-dashoffset: 283;"/></svg>
+                            <i class="devicon-java-plain text-5xl absolute text-red-500"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">Java</h4>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects" class="py-20">
+            <div class="container mx-auto px-6">
+                <h2 class="section-title text-4xl font-bold text-center mb-16 reveal">Featured Projects</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="glass-card rounded-xl overflow-hidden group reveal">
+                        <div class="overflow-hidden h-56 relative">
+                            <div class="bg-gray-100 h-full flex items-center justify-center text-lime-500 text-6xl group-hover:scale-110 transition-transform duration-500"><i class="fas fa-robot"></i></div>
+                        </div>
+                        <div class="p-6 flex flex-col h-[280px]">
+                            <h3 class="text-xl font-bold mb-2">Campanion Pro</h3>
+                            <p class="text-gray-600 mb-4 text-sm flex-grow">An AI-powered study assistant with personalized learning suggestions via Llama AI, real-time sync with Firebase, and a focus on intuitive UI.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full">Flutter</span>
+                                <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-1 rounded-full">Firebase</span>
+                                <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-1 rounded-full">Llama AI</span>
+                            </div>
+                            <div class="flex gap-4 mt-auto">
+                                <a href="#" class="text-sm font-semibold text-gray-700 hover:text-green-600 transition"><i class="fab fa-github mr-1"></i> View Code</a>
+                                <a href="#" class="text-sm font-semibold text-gray-700 hover:text-green-600 transition"><i class="fas fa-external-link-alt mr-1"></i> Live Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card rounded-xl overflow-hidden group reveal" style="transition-delay: 0.2s;">
+                        <div class="overflow-hidden h-56">
+                            <div class="bg-gray-100 h-full flex items-center justify-center text-red-500 text-6xl group-hover:scale-110 transition-transform duration-500"><i class="fas fa-heartbeat"></i></div>
+                        </div>
+                        <div class="p-6 flex flex-col h-[280px]">
+                            <h3 class="text-xl font-bold mb-2">Rescue App</h3>
+                            <p class="text-gray-600 mb-4 text-sm flex-grow">A hackathon project (9th place) designed for emergency response. Features include location tracking, one-touch alerts, and a streamlined UI for high-stress situations.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full">Flutter</span>
+                                <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-1 rounded-full">UI/UX</span>
+                                <span class="bg-gray-200 text-gray-800 text-xs font-semibold px-2.5 py-1 rounded-full">IEEE</span>
+                            </div>
+                            <div class="flex gap-4 mt-auto">
+                                <a href="#" class="text-sm font-semibold text-gray-700 hover:text-green-600 transition"><i class="fab fa-github mr-1"></i> View Code</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card rounded-xl overflow-hidden group reveal" style="transition-delay: 0.4s;">
+                        <div class="overflow-hidden h-56">
+                            <div class="bg-gray-100 h-full flex items-center justify-center text-green-500 text-6xl group-hover:scale-110 transition-transform duration-500"><i class="fas fa-rocket"></i></div>
+                        </div>
+                        <div class="p-6 flex flex-col h-[280px]">
+                            <h3 class="text-xl font-bold mb-2">Internship Production Apps</h3>
+                            <p class="text-gray-600 mb-4 text-sm flex-grow">Delivered two production-ready mobile apps for Genzee Technologies, focusing on high performance, clean state management, and seamless API integration.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full">Flutter</span>
+                                <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-1 rounded-full">Firebase</span>
+                                <span class="bg-gray-200 text-gray-800 text-xs font-semibold px-2.5 py-1 rounded-full">REST APIs</span>
+                            </div>
+                             <div class="flex gap-4 mt-auto">
+                                <a href="#" class="text-sm font-semibold text-gray-700 hover:text-green-600 transition"><i class="fas fa-lock mr-1"></i> Private Code</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="contact" class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="glass-card rounded-2xl max-w-4xl mx-auto p-8 md:p-12 reveal">
+                    <h2 class="section-title text-4xl font-bold text-center mb-4">Get In Touch</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto mb-10 text-center">
+                        Have a project in mind or just want to say hello? I'd love to hear from you. Fill out the form below and I'll get back to you as soon as possible.
+                    </p>
+                    <form action="https://formspree.io/f/YOUR_UNIQUE_ID" method="POST" class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                                <input type="text" name="name" id="name" required class="w-full px-4 py-2 bg-gray-100 border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                            </div>
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Your Email</label>
+                                <input type="email" name="email" id="email" required class="w-full px-4 py-2 bg-gray-100 border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                            <textarea name="message" id="message" rows="5" required class="w-full px-4 py-2 bg-gray-100 border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg shadow-green-500/30 transform hover:scale-105">
+                                Send Message <i class="fas fa-paper-plane ml-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-12 bg-lime-50/50">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            <div class="flex justify-center gap-6 mb-6">
+                <a href="https://github.com/mhmd-yazeen" target="_blank" class="text-2xl hover:text-green-500 transition"><i class="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/muhammad-yazin-61b57b370/" target="_blank" class="text-2xl hover:text-green-500 transition"><i class="fab fa-linkedin"></i></a>
+                <a href="#" class="text-2xl hover:text-green-500 transition"><i class="fab fa-twitter"></i></a>
+            </div>
+            <p>&copy; 2025 Muhammed Yazeen. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Loading Screen ---
+            const loadingScreen = document.getElementById('loading-screen');
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                }, 500); // You can adjust this delay
+            });
+
+            // --- 3D Constellation Network Background ---
+            let scene, camera, renderer, particles, lines;
+            let mouseX = 0, mouseY = 0;
+            const particleCount = 150;
+            
+            function init3D() {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 5;
+
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const particleGeometry = new THREE.BufferGeometry();
+                const particlePositions = new Float32Array(particleCount * 3);
+                const particleVelocities = [];
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const i3 = i * 3;
+                    particlePositions[i3] = (Math.random() - 0.5) * 10;
+                    particlePositions[i3 + 1] = (Math.random() - 0.5) * 10;
+                    particlePositions[i3 + 2] = (Math.random() - 0.5) * 10;
+                    particleVelocities.push({ x: (Math.random() - 0.5) * 0.001, y: (Math.random() - 0.5) * 0.001, z: (Math.random() - 0.5) * 0.001 });
+                }
+                particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+                particleGeometry.velocities = particleVelocities;
+
+                const particleMaterial = new THREE.PointsMaterial({ color: 0x22c55e, size: 0.03, transparent: true, opacity: 0.8 });
+                particles = new THREE.Points(particleGeometry, particleMaterial);
+                scene.add(particles);
+
+                const lineGeometry = new THREE.BufferGeometry();
+                const linePositions = new Float32Array(particleCount * particleCount * 3);
+                lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x84cc16, transparent: true, opacity: 0.3 });
+                lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+                scene.add(lines);
+
+                animate();
+            }
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                const positions = particles.geometry.attributes.position.array;
+                const velocities = particles.geometry.velocities;
+                for (let i = 0; i < particleCount; i++) {
+                    const i3 = i * 3;
+                    positions[i3] += velocities[i].x;
+                    positions[i3 + 1] += velocities[i].y;
+                    positions[i3 + 2] += velocities[i].z;
+                    if (positions[i3] > 5 || positions[i3] < -5) velocities[i].x *= -1;
+                    if (positions[i3+1] > 5 || positions[i3+1] < -5) velocities[i].y *= -1;
+                    if (positions[i3+2] > 5 || positions[i3+2] < -5) velocities[i].z *= -1;
+                }
+                particles.geometry.attributes.position.needsUpdate = true;
+
+                const linePositions = lines.geometry.attributes.position.array;
+                let lineIndex = 0;
+                const connectDistance = 1.0;
+                for (let i = 0; i < particleCount; i++) {
+                    for (let j = i + 1; j < particleCount; j++) {
+                        const i3 = i * 3, j3 = j * 3;
+                        const dx = positions[i3] - positions[j3], dy = positions[i3 + 1] - positions[j3 + 1], dz = positions[i3 + 2] - positions[j3 + 2];
+                        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                        if (dist < connectDistance) {
+                            linePositions[lineIndex++] = positions[i3]; linePositions[lineIndex++] = positions[i3 + 1]; linePositions[lineIndex++] = positions[i3 + 2];
+                            linePositions[lineIndex++] = positions[j3]; linePositions[lineIndex++] = positions[j3 + 1]; linePositions[lineIndex++] = positions[j3 + 2];
+                        }
+                    }
+                }
+                lines.geometry.setDrawRange(0, lineIndex / 3);
+                lines.geometry.attributes.position.needsUpdate = true;
+
+                if (camera) {
+                    camera.position.x += (mouseX * 2 - camera.position.x) * 0.02;
+                    camera.position.y += (-mouseY * 2 - camera.position.y) * 0.02;
+                    camera.lookAt(scene.position);
+                }
+                renderer.render(scene, camera);
+            }
+
+            document.addEventListener('mousemove', (event) => { mouseX = event.clientX / window.innerWidth; mouseY = event.clientY / window.innerHeight; });
+            window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+            init3D();
+
+            // --- Custom Cursor ---
+            const cursor = document.querySelector('.cursor');
+            const interactiveElements = document.querySelectorAll('a, button, input, .group, [data-filter], .tech-card');
+            document.addEventListener('mousemove', e => { cursor.setAttribute('style', `top: ${e.pageY}px; left: ${e.pageX}px;`); });
+            interactiveElements.forEach(el => { el.addEventListener('mouseover', () => cursor.classList.add('cursor-grow')); el.addEventListener('mouseleave', () => cursor.classList.remove('cursor-grow')); });
+
+            // --- Navbar Scroll Effect ---
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => { window.scrollY > 50 ? navbar.classList.add('bg-white/80', 'backdrop-blur-sm', 'shadow-lg') : navbar.classList.remove('bg-white/80', 'backdrop-blur-sm', 'shadow-lg'); });
+
+            // --- Mobile Menu Toggle ---
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuIcon = mobileMenuBtn.querySelector('i');
+            function toggleMenu() {
+                mobileMenu.classList.toggle('-translate-y-full');
+                const isMenuOpen = !mobileMenu.classList.contains('-translate-y-full');
+                mobileMenuIcon.className = isMenuOpen ? 'fas fa-times' : 'fas fa-bars';
+            }
+            mobileMenuBtn.addEventListener('click', toggleMenu);
+            document.querySelectorAll('#mobile-menu a').forEach(link => { link.addEventListener('click', toggleMenu); });
+
+            // --- Scroll Animations ---
+            const revealElements = document.querySelectorAll('.reveal');
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); } });
+            }, { threshold: 0.1 });
+            revealElements.forEach(el => revealObserver.observe(el));
+
+            // --- Active Nav Link on Scroll ---
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('#nav-menu a');
+            const activeLinkObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active-link');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active-link');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: '-30% 0px -70% 0px' });
+            sections.forEach(section => activeLinkObserver.observe(section));
+
+            // --- Tech Stack Filtering ---
+            const filterBtns = document.querySelectorAll('#tech-filters .filter-btn');
+            const techCards = document.querySelectorAll('#tech-grid .tech-card');
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => {
+                        b.classList.remove('bg-green-500', 'text-white');
+                        b.classList.add('bg-white', 'text-gray-700');
+                    });
+                    btn.classList.add('bg-green-500', 'text-white');
+                    btn.classList.remove('bg-white', 'text-gray-700');
+                    const filter = btn.dataset.filter;
+                    techCards.forEach(card => {
+                        card.style.display = 'none';
+                        if (filter === 'all' || card.dataset.category === filter) {
+                            setTimeout(() => {
+                                card.style.display = 'block';
+                            }, 10);
+                        }
+                    });
+                });
+            });
+            
+            // --- Animate Circular Progress Bars ---
+            const progressObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const card = entry.target;
+                        const circle = card.querySelector('.progress-circle');
+                        const percent = card.dataset.percent;
+                        const radius = circle.r.baseVal.value;
+                        const circumference = 2 * Math.PI * radius;
+                        const offset = circumference - (percent / 100) * circumference;
+                        circle.style.strokeDashoffset = offset;
+                        observer.unobserve(card);
+                    }
+                });
+            }, { threshold: 0.5 });
+            techCards.forEach(card => progressObserver.observe(card));
+
+            // --- NEW: Initialize 3D Tilt Effect for Tech Cards ---
+            VanillaTilt.init(document.querySelectorAll(".tech-card"), {
+                max: 25,
+                speed: 400,
+                glare: true,
+                "max-glare": 0.4, // A subtle glare effect
+            });
+
+        });
+    </script>
+
+</body>
+</html>
