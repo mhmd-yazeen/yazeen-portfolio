@@ -46,6 +46,5 @@ To enable the contact form, replace the placeholder URL in index.html with your 
 HTML
 
 <form action="https://formspree.io/f/YOUR_UNIQUE_ID" method="POST">
-mmmm
-mmmm
-mm
+
+
