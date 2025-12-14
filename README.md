@@ -9,7 +9,7 @@ Developer: Muhammed Yazeen
 Focus: Flutter Mobile Development and AI Integration
 
 Design: Modern, light theme utilizing Glassmorphism and dynamic visual effects.
-mmnmmmmmmmmm
+
 ✨ Key Features
 3D Background: Interactive Constellation Network on the homepage using Three.js.
 
